@@ -1,0 +1,40 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: Build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
+        
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.1
+
+    - name: Setup Nuget
+      uses: Nuget/setup-nuget@v1
+     
+    - name: Restore nuget packages
+      run: nuget restore DraftTable.sln
+    
+    - name: Build
+      run: msbuild DraftTable.sln -t:rebuild -verbosity:diag -property:Configuration=Release
+      
+    - name: 'Upload Artifact'
+      uses: actions/upload-artifact@v3
+      with:
+        name: drafttableplugin
+        path: DraftTable/bin/*
